@@ -14,8 +14,14 @@ func TestPolynomialToString(t *testing.T) {
 }
 
 func TestPolynomialAdd(t *testing.T) {
-	assert.Equal(t, []int64{5, 7, 9}, PolynomialAdd([]int64{1, 2, 3}, []int64{4, 5, 6}))
-	assert.Equal(t, []int64{1, 2, 6, 4}, PolynomialAdd([]int64{1, 0, 0, 4}, []int64{0, 2, 6}))
+	assert.Equal(t, []int64{5, 7, 9}, PolynomialAdd([]int64{1, 2, 3}, []int64{4, 5, 6}, 13))
+	assert.Equal(t, []int64{1, 2, 6, 4}, PolynomialAdd([]int64{1, 0, 0, 4}, []int64{0, 2, 6}, 13))
+}
+
+func TestModInverse(t *testing.T) {
+	for i := int64(1); i < 7; i++ {
+		assert.Equal(t, ((ModInverse(i, 7) * i) % 7), int64(1))
+	}
 }
 
 func TestPolynomialMod(t *testing.T) {
