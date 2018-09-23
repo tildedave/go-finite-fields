@@ -119,7 +119,7 @@ func PolynomialMultiply(f []int64, g []int64, char int64) []int64 {
 		for i := 0; i <= n; i++ {
 			j := n - i
 			if i < len(f) && j < len(g) {
-				result[n] += (f[i] * g[j]) % char
+				result[n] = (result[n] + f[i]*g[j]) % char
 			}
 		}
 	}
@@ -127,28 +127,68 @@ func PolynomialMultiply(f []int64, g []int64, char int64) []int64 {
 	return result
 }
 
+func PolynomialScalar(f []int64, c int64, char int64) []int64 {
+	q := make([]int64, len(f))
+	copy(q, f)
+
+	for i, x := range f {
+		q[i] = (x * c) % char
+	}
+
+	return q
+}
+
 func PolynomialTrunc(f []int64) []int64 {
 	i := len(f) - 1
 	for i > 0 && f[i] == 0 {
 		i--
 	}
-	if i == 0 {
+	if i == 0 && f[i] == 0 {
 		return []int64{}
 	}
 
 	return f[0 : i+1]
 }
 
-func PolynomialDivide(f1 []int64, f2 []int64, char int64) {
+func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 	// return f1 / f2
 	// for now assume deg(f1 <= f2)
 
 	// d1 := PolynomialDegree(f1)
-	d2 := PolynomialDegree(f2)
+	// synthetic division
+	q := make([]int64, len(g))
+	copy(q, g)
 
-	for i := d2 - 1; i >= 0; i-- {
+	inv := ModInverse(f[len(f)-1], char)
 
+	for i := len(g) - 1; i >= len(g)-len(f)-1 && i >= 0; i-- {
+		q[i] = (q[i] * inv) % char
+		x := q[i]
+
+		for j := len(f) - 2; j >= 0; j-- {
+			// Modify elements of g from top down
+			// Total number of elements to modify is total number of divisor elements
+			// x^4  + 4x^3 + 6x^2 + 4x + 1 divide by x^2 + 2x + 1
+			// Given j in the divisor, we are going to modify ...
+			// For i = 4 (length of x^4 term), we modify terms 3 2 in q.
+			//     j = 1, j = 0
+			// For i = 3 we modify terms 2 1 in q.
+			// For i = 2 we modify terms 1 0 in q.
+			// Then we're done.
+
+			term := i - ((len(f) - 1) - j)
+
+			// 1-term
+			if term < 0 {
+				continue
+			}
+
+			y := (x * f[j]) % char
+			q[term] = (q[term] + (char - y)) % char
+		}
 	}
+
+	return q[len(f)-1:], PolynomialTrunc(q[:len(f)-1])
 }
 
 type Field struct {
