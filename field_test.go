@@ -34,8 +34,8 @@ func TestModInverse(t *testing.T) {
 	}
 }
 
-func TestPolynomialMod(t *testing.T) {
-	assert.Equal(t, []int64{1, 2, 0}, PolynomialMod([]int64{4, 14, 6}, 3))
+func TestPolynomialScalarMod(t *testing.T) {
+	assert.Equal(t, []int64{1, 2, 0}, PolynomialScalarMod([]int64{4, 14, 6}, 3))
 }
 
 func TestPolynomialTrunc(t *testing.T) {
@@ -55,4 +55,15 @@ func TestPolynomialDivide(t *testing.T) {
 	q, r = PolynomialDivide([]int64{2, 0, 1}, []int64{0, 0, 2}, 3)
 	assert.Equal(t, []int64{2}, q)
 	assert.Equal(t, []int64{2}, r)
+}
+
+func TestPolynomialMod(t *testing.T) {
+	// https://www.doc.ic.ac.uk/~mrh/330tutor/ch04s02.html
+	modulus := []int64{2, 0, 1}
+	assert.Equal(t, []int64{2}, PolynomialMod(modulus, []int64{0, 0, 2}, 3))
+	assert.Equal(t, []int64{1}, PolynomialMod(modulus, []int64{0, 0, 0, 0, 1}, 3))
+	assert.Equal(t, []int64{0, 1}, PolynomialMod(modulus, []int64{0, 0, 0, 1}, 3))
+	assert.Equal(t, []int64{}, PolynomialMod(modulus, []int64{0, 0, 2, 0, 1}, 3))
+	assert.Equal(t, []int64{2, 1}, PolynomialMod(modulus, []int64{0, 0, 2, 1}, 3))
+	assert.Equal(t, []int64{2}, PolynomialMod(modulus, []int64{0, 0, 0, 0, 0, 0, 2}, 3))
 }
