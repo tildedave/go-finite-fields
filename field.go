@@ -64,25 +64,25 @@ func ModInverse(x int64, p int64) int64 {
 }
 
 func PolynomialDegree(f1 []int64) int {
-	return len(f1)
+	return len(f1) - 1
 }
 
 func PolynomialAdd(f1 []int64, f2 []int64, char int64) []int64 {
 	// assume deg(f1) <= f2
-	d1 := PolynomialDegree(f1)
-	d2 := PolynomialDegree(f2)
-	if d1 > d2 {
+	l1 := len(f1)
+	l2 := len(f2)
+	if l1 > l2 {
 		temp := f1
 		f1 = f2
 		f2 = temp
-		d1 = PolynomialDegree(f1)
-		d2 = PolynomialDegree(f2)
+		l1 = len(f1)
+		l2 = len(f2)
 	}
 
-	add := make([]int64, d2)
+	add := make([]int64, l2)
 	copy(add, f2)
-	for i := 0; i < d1; i++ {
-		add[i] += f1[i] % char
+	for i, x := range f1 {
+		add[i] = (add[i] + x) % char
 	}
 
 	return add
@@ -98,11 +98,57 @@ func PolynomialMod(f []int64, char int64) []int64 {
 	return g
 }
 
+func PolynomialMultiply(f []int64, g []int64, char int64) []int64 {
+	// dimension of f * g = deg(f) * deg(g).  len(f) = deg(f) + 1
+	d1 := len(f) - 1
+	d2 := len(g) - 1
+	if d1 < 1 {
+		d1 = 1
+	}
+	if d2 < 1 {
+		d2 = 1
+	}
+	dim := d1 * d2
+	result := make([]int64, dim+1)
+
+	// 0 term = f[0] * g[0]
+	// 1 term = f[1] * g[0] + f[0] * g[1]
+	// 2 term = f[2] * g[0] + f[1] * g[1] + f[0] * g[2]
+
+	for n := 0; n <= dim; n++ {
+		for i := 0; i <= n; i++ {
+			j := n - i
+			if i < len(f) && j < len(g) {
+				result[n] += (f[i] * g[j]) % char
+			}
+		}
+	}
+
+	return result
+}
+
+func PolynomialTrunc(f []int64) []int64 {
+	i := len(f) - 1
+	for i > 0 && f[i] == 0 {
+		i--
+	}
+	if i == 0 {
+		return []int64{}
+	}
+
+	return f[0 : i+1]
+}
+
 func PolynomialDivide(f1 []int64, f2 []int64, char int64) {
 	// return f1 / f2
-
 	// for now assume deg(f1 <= f2)
 
+	// d1 := PolynomialDegree(f1)
+	d2 := PolynomialDegree(f2)
+
+	for i := d2 - 1; i >= 0; i-- {
+
+	}
 }
 
 type Field struct {
