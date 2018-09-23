@@ -46,14 +46,12 @@ func Max(a int, b int) int {
 func ModExp(m int64, n int64, p int64) int64 {
 	var pow int64 = 1
 
-	for n > 1 {
-		if n%2 == 0 {
-			pow = (pow * m * m) % p
-			n = n / 2
-		} else {
+	for n > 0 {
+		if n%2 == 1 {
 			pow = (pow * m) % p
-			n = n - 1
 		}
+		m = (m * m) % p
+		n = n / 2
 	}
 
 	return pow
