@@ -6,17 +6,20 @@ import (
 
 func PolynomialToString(coeffs []int64) string {
 	str := ""
+
 	for i := len(coeffs) - 1; i >= 0; i-- {
 		n := coeffs[i]
+
+		if n == 0 {
+			continue
+		}
 
 		if i != len(coeffs)-1 {
 			str += " + "
 		}
 
 		coeff := fmt.Sprintf("%d", n)
-		if n == 0 {
-			continue
-		} else if n == 1 {
+		if n == 1 {
 			coeff = ""
 		}
 
