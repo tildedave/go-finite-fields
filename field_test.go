@@ -68,6 +68,42 @@ func TestPolynomialDivide4(t *testing.T) {
 	assert.Equal(t, []int64{2, 1}, q)
 }
 
+func TestPolynomialDerivative(t *testing.T) {
+	// x^2 + 6x - 1 = 2x + 6
+	assert.Equal(t, []int64{6, 2}, PolynomialDerivative([]int64{3, 6, 1}, 7))
+	assert.Equal(t, []int64{3, 0, 0, 4}, PolynomialDerivative([]int64{0, 3, 0, 0, 1}, 7))
+}
+
+func TestPolynomialMakeMonic(t *testing.T) {
+	assert.Equal(t, []int64{1, 1}, PolynomialMakeMonic([]int64{3, 3}, 5))
+}
+
+func TestPolynomialGcd(t *testing.T) {
+	p1 := []int64{6, 2}
+	p2 := []int64{3, 4, 1}
+	p3 := []int64{3, 1}
+
+	p4 := PolynomialMultiply(p1, p2, 7)
+	p5 := PolynomialMultiply(p1, p3, 7)
+	gcd := PolynomialGcd(p4, p5, 7)
+
+	assert.True(t, PolynomialDivides(gcd, p4, 7))
+	assert.True(t, PolynomialDivides(gcd, p5, 7))
+}
+
+func TestPolynomialGcd2(t *testing.T) {
+	gcd := PolynomialGcd([]int64{193 - 6, 193 - 5, 1}, []int64{6, 7, 1}, 193)
+	assert.Equal(t, []int64{1, 1}, gcd)
+}
+
+func TestPolynomialIsSquareFree(t *testing.T) {
+	p := []int64{2, 1}
+	p2 := PolynomialMultiply(p, p, 3)
+
+	assert.True(t, PolynomialIsSquareFree(p, 3))
+	assert.False(t, PolynomialIsSquareFree(p2, 3))
+}
+
 func TestPolynomialMod(t *testing.T) {
 	// https://www.doc.ic.ac.uk/~mrh/330tutor/ch04s02.html
 	modulus := []int64{2, 0, 1}

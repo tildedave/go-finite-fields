@@ -71,18 +71,11 @@ func PolynomialDegree(f1 []int64) int {
 }
 
 func PolynomialAdd(f1 []int64, f2 []int64, char int64) []int64 {
-	// assume deg(f1) <= f2
-	l1 := len(f1)
-	l2 := len(f2)
-	if l1 > l2 {
-		temp := f1
-		f1 = f2
-		f2 = temp
-		l1 = len(f1)
-		l2 = len(f2)
+	if len(f1) > len(f2) {
+		return PolynomialAdd(f2, f1, char)
 	}
 
-	add := make([]int64, l2)
+	add := make([]int64, len(f2))
 	copy(add, f2)
 	for i, x := range f1 {
 		add[i] = (add[i] + x) % char
@@ -186,6 +179,52 @@ func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 func PolynomialMod(f []int64, g []int64, char int64) []int64 {
 	_, r := PolynomialDivide(f, g, char)
 	return r
+}
+
+func PolynomialDivides(f []int64, g []int64, char int64) bool {
+	return len(PolynomialMod(f, g, char)) == 0
+}
+
+func PolynomialDerivative(f []int64, char int64) []int64 {
+	out := make([]int64, len(f)-1)
+
+	for i := int64(len(f) - 1); i >= 1; i-- {
+		out[i-1] = (f[i] * i) % char
+	}
+
+	return out
+}
+
+func PolynomialMakeMonic(f []int64, char int64) []int64 {
+	out := make([]int64, len(f))
+	inv := ModInverse(f[len(f)-1], char)
+	for i := len(f) - 1; i >= 0; i-- {
+		out[i] = (f[i] * inv) % char
+	}
+
+	return out
+}
+
+func PolynomialGcd(f []int64, g []int64, char int64) []int64 {
+	// assume deg(f) <= deg(g)
+	if len(f) > len(g) {
+		return PolynomialGcd(g, f, char)
+	}
+
+	_, r := PolynomialDivide(f, g, char)
+
+	if len(r) == 0 {
+		return PolynomialMakeMonic(f, char)
+	}
+
+	return PolynomialGcd(r, f, char)
+}
+
+func PolynomialIsSquareFree(f []int64, char int64) bool {
+	deriv := PolynomialDerivative(f, char)
+	gcd := PolynomialGcd(f, deriv, char)
+
+	return len(gcd) == 1
 }
 
 type Field struct {
