@@ -164,7 +164,7 @@ func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 
 	inv := ModInverse(f[len(f)-1], char)
 
-	for i := len(g) - 1; i >= len(g)-len(f)-2 && i >= 0; i-- {
+	for i := len(g) - 1; i >= len(f)-1 && i >= 0; i-- {
 		out[i] = (out[i] * inv) % char
 		x := out[i]
 
@@ -180,12 +180,6 @@ func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 			// Then we're done.
 
 			term := i - ((len(f) - 1) - j)
-
-			// 1-term
-			if term < 0 {
-				continue
-			}
-
 			y := (x * f[j]) % char
 			out[term] = (out[term] + (char - y)) % char
 		}

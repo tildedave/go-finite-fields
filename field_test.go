@@ -43,18 +43,29 @@ func TestPolynomialTrunc(t *testing.T) {
 	assert.Equal(t, []int64{2}, PolynomialTrunc([]int64{2, 0}))
 }
 
-func TestPolynomialDivide(t *testing.T) {
+func TestPolynomialDivide1(t *testing.T) {
 	q, r := PolynomialDivide([]int64{1, 2, 1}, []int64{1, 4, 6, 4, 1}, 5)
 	assert.Equal(t, []int64{1, 2, 1}, q)
 	assert.Equal(t, []int64{}, r)
+}
 
-	q, r = PolynomialDivide([]int64{1, 2}, []int64{6, 2, 6, 3}, 7)
+func TestPolynomialDivide2(t *testing.T) {
+	q, r := PolynomialDivide([]int64{1, 2}, []int64{6, 2, 6, 3}, 7)
 	assert.Equal(t, []int64{6, 4, 5}, q)
 	assert.Equal(t, []int64{}, r)
+}
 
-	q, r = PolynomialDivide([]int64{2, 0, 1}, []int64{0, 0, 2}, 3)
+func TestPolynomialDivide3(t *testing.T) {
+	q, r := PolynomialDivide([]int64{2, 0, 1}, []int64{0, 0, 2}, 3)
 	assert.Equal(t, []int64{2}, q)
 	assert.Equal(t, []int64{2}, r)
+}
+
+func TestPolynomialDivide4(t *testing.T) {
+	q, r := PolynomialDivide([]int64{2, 0, 1}, []int64{0, 0, 2, 1}, 3)
+
+	assert.Equal(t, []int64{2, 1}, r)
+	assert.Equal(t, []int64{2, 1}, q)
 }
 
 func TestPolynomialMod(t *testing.T) {
