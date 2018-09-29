@@ -105,13 +105,7 @@ func PolynomialMultiply(f []int64, g []int64, char int64) []int64 {
 	// dimension of f * g = deg(f) * deg(g).  len(f) = deg(f) + 1
 	d1 := len(f) - 1
 	d2 := len(g) - 1
-	if d1 < 1 {
-		d1 = 1
-	}
-	if d2 < 1 {
-		d2 = 1
-	}
-	dim := d1 * d2
+	dim := d1 + d2
 	result := make([]int64, dim+1)
 
 	// 0 term = f[0] * g[0]

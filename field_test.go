@@ -24,8 +24,8 @@ func TestPolynomialMult(t *testing.T) {
 
 	p1 := []int64{1, 2}
 	p2 := []int64{6, 5, 5}
-	fmt.Printf("multiply %s by %s\n", PolynomialToString(p1), PolynomialToString(p2))
-	fmt.Println(PolynomialToString(PolynomialMultiply(p1, p2, 7)))
+
+	assert.Equal(t, []int64{6, 3, 1, 3}, PolynomialMultiply(p1, p2, 7))
 }
 
 func TestModInverse(t *testing.T) {
