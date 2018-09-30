@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var _ = fmt.Println
@@ -114,10 +115,24 @@ func TestPolynomialIsSquareFree(t *testing.T) {
 func TestPolynomialMod(t *testing.T) {
 	// https://www.doc.ic.ac.uk/~mrh/330tutor/ch04s02.html
 	modulus := []int64{2, 0, 1}
-	assert.Equal(t, []int64{2}, PolynomialMod(modulus, []int64{0, 0, 2}, 3))
-	assert.Equal(t, []int64{1}, PolynomialMod(modulus, []int64{0, 0, 0, 0, 1}, 3))
-	assert.Equal(t, []int64{0, 1}, PolynomialMod(modulus, []int64{0, 0, 0, 1}, 3))
-	assert.Equal(t, []int64{}, PolynomialMod(modulus, []int64{0, 0, 2, 0, 1}, 3))
-	assert.Equal(t, []int64{2, 1}, PolynomialMod(modulus, []int64{0, 0, 2, 1}, 3))
-	assert.Equal(t, []int64{2}, PolynomialMod(modulus, []int64{0, 0, 0, 0, 0, 0, 2}, 3))
+	assert.Equal(t, []int64{2}, PolynomialMod([]int64{0, 0, 2}, modulus, 3))
+	assert.Equal(t, []int64{1}, PolynomialMod([]int64{0, 0, 0, 0, 1}, modulus, 3))
+	assert.Equal(t, []int64{0, 1}, PolynomialMod([]int64{0, 0, 0, 1}, modulus, 3))
+	assert.Equal(t, []int64{}, PolynomialMod([]int64{0, 0, 2, 0, 1}, modulus, 3))
+	assert.Equal(t, []int64{2, 1}, PolynomialMod([]int64{0, 0, 2, 1}, modulus, 3))
+	assert.Equal(t, []int64{2}, PolynomialMod([]int64{0, 0, 0, 0, 0, 0, 2}, modulus, 3))
+}
+
+func TestPolynomialModExp(t *testing.T) {
+	// Example is from Knuth 4.6.2
+	mod := []int64{8, 2, 8, 10, 10, 0, 1, 0, 1}
+	x := []int64{0, 1}
+
+	assert.Equal(t, []int64{2, 1, 7, 11, 10, 12, 5, 11}, PolynomialModExp(x, 13, mod, 13))
+	assert.Equal(t, []int64{3, 6, 4, 3, 0, 4, 7, 2}, PolynomialModExp(x, 13*2, mod, 13))
+	assert.Equal(t, []int64{4, 3, 6, 5, 1, 6, 2, 3}, PolynomialModExp(x, 13*3, mod, 13))
+	assert.Equal(t, []int64{2, 11, 8, 8, 3, 1, 3, 11}, PolynomialModExp(x, 13*4, mod, 13))
+	assert.Equal(t, []int64{6, 11, 8, 6, 2, 7, 10, 9}, PolynomialModExp(x, 13*5, mod, 13))
+	assert.Equal(t, []int64{5, 11, 7, 10, 0, 11, 7, 12}, PolynomialModExp(x, 13*6, mod, 13))
+	assert.Equal(t, []int64{3, 3, 12, 5, 0, 11, 9, 12}, PolynomialModExp(x, 13*7, mod, 13))
 }
