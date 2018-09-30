@@ -1,8 +1,32 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
+
+type Polynomial struct {
+	coeffs []int64
+	field  *Field
+}
+
+type Field struct {
+	characteristic int64
+	polynomial     *Polynomial
+}
+
+func MakePolynomial(coeffs []int64, field *Field) Polynomial {
+	return Polynomial{coeffs: coeffs, field: field}
+}
+
+func FiniteField(characteristic int64) (*Field, error) {
+	if !IsPrime(characteristic) {
+		msg := fmt.Sprintf("Cannot create a field with non-prime characteristic: %d", characteristic)
+		return nil, errors.New(msg)
+	}
+	f := Field{characteristic: characteristic, polynomial: nil}
+	return &f, nil
+}
 
 func PolynomialToString(coeffs []int64) string {
 	str := ""
@@ -37,33 +61,6 @@ func PolynomialToString(coeffs []int64) string {
 	}
 
 	return str
-}
-
-func Max(a int, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func ModExp(m int64, n int64, p int64) int64 {
-	var pow int64 = 1
-
-	for n > 0 {
-		if n%2 == 1 {
-			pow = (pow * m) % p
-		}
-		m = (m * m) % p
-		n = n / 2
-	}
-
-	return pow
-}
-
-func ModInverse(x int64, p int64) int64 {
-	// a^{p-1} = 1 mod p
-	// a * a^{p-2} = 1 mod p
-	return ModExp(x, p-2, p)
 }
 
 func PolynomialDegree(f1 []int64) int {
@@ -225,8 +222,4 @@ func PolynomialIsSquareFree(f []int64, char int64) bool {
 	gcd := PolynomialGcd(f, deriv, char)
 
 	return len(gcd) == 1
-}
-
-type Field struct {
-	characteristic int64
 }

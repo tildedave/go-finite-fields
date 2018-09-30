@@ -8,6 +8,19 @@ import (
 
 var _ = fmt.Println
 
+func TestCreateField(t *testing.T) {
+	f, err := FiniteField(5)
+
+	assert.NotNil(t, f)
+	assert.Nil(t, err)
+}
+
+func TestCreateFieldWithInvalidCharacteristic(t *testing.T) {
+	f, err := FiniteField(4)
+	assert.Nil(t, f)
+	assert.Equal(t, "Cannot create a field with non-prime characteristic: 4", err.Error())
+}
+
 func TestPolynomialToString(t *testing.T) {
 	assert.Equal(t, PolynomialToString([]int64{1, 2, 3}), "3x^2 + 2x + 1")
 	assert.Equal(t, PolynomialToString([]int64{4, 5, 1}), "x^2 + 5x + 4")
@@ -26,12 +39,6 @@ func TestPolynomialMult(t *testing.T) {
 	p2 := []int64{6, 5, 5}
 
 	assert.Equal(t, []int64{6, 3, 1, 3}, PolynomialMultiply(p1, p2, 7))
-}
-
-func TestModInverse(t *testing.T) {
-	for i := int64(1); i < 7; i++ {
-		assert.Equal(t, ((ModInverse(i, 7) * i) % 7), int64(1))
-	}
 }
 
 func TestPolynomialScalarMod(t *testing.T) {
