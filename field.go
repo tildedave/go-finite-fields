@@ -137,6 +137,9 @@ func PolynomialTrunc(f []int64) []int64 {
 	return f[0 : i+1]
 }
 
+// PolynomialDivide computes q, r such that g = f * q + r.
+//
+// It uses the method of "synthetic division".
 func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 	// return f1 / f2
 	// for now assume deg(f1 <= f2)
@@ -173,15 +176,45 @@ func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 	return q, r
 }
 
-func PolynomialMod(f []int64, g []int64, char int64) []int64 {
+// PolynomialMod computes the polynomial f modulo the polynomial g.
+//
+// Example: x^2 + x + 1 = x + 1 mod x^2.
+func PolynomialMod(g []int64, f []int64, char int64) []int64 {
 	_, r := PolynomialDivide(f, g, char)
 	return r
 }
 
+// PolynomialModExp computes the modular exponent of f to the nth power,
+// modulo a given polynomial.
+//
+// This will give a correct but stupid way to compute the rows of Berlekamp's algorithm.
+// Potentially we will want to invoke the modulus after each step of the algorithm to
+// avoid things like x^96 creating giant slices that we then waste a bunch of time
+// dividing.
+func PolynomialModExp(f []int64, n int64, mod []int64, char int64) []int64 {
+	pow := []int64{1}
+
+	for n > 0 {
+		if n%2 == 1 {
+			pow = PolynomialMultiply(pow, f, char)
+			// TODO: do we need to modulus now?
+		}
+		f = PolynomialMultiply(f, f, char)
+		n = n / 2
+	}
+
+	return PolynomialMod(pow, mod, char)
+}
+
+// PolynomialDivides returns whether or not f is a factor of g.
 func PolynomialDivides(f []int64, g []int64, char int64) bool {
 	return len(PolynomialMod(f, g, char)) == 0
 }
 
+// PolynomialDerivative computes the symbolic derivative of f.
+//
+// It is primarily used to determine whether or not a polynomial f is square-free.  If f
+// is square-free, gcd(f, f') = 1.  If f has a factor v^2, then gcd(f, f') = v.
 func PolynomialDerivative(f []int64, char int64) []int64 {
 	out := make([]int64, len(f)-1)
 
