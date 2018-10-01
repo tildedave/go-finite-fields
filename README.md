@@ -1,1 +1,1 @@
-Finite field computations in Golang.  Looking to implement Berklekamp's Algorithm and/or Cantor-Zassenhaus.
+Finite field computations in Golang.  Looking to implement Berlekamp's Algorithm and/or Cantor-Zassenhaus.
