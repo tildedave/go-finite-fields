@@ -208,7 +208,7 @@ func PolynomialModExp(f []int64, n int64, mod []int64, char int64) []int64 {
 
 // PolynomialDivides returns whether or not f is a factor of g.
 func PolynomialDivides(f []int64, g []int64, char int64) bool {
-	return len(PolynomialMod(f, g, char)) == 0
+	return len(PolynomialMod(g, f, char)) == 0
 }
 
 // PolynomialDerivative computes the symbolic derivative of f.
@@ -236,7 +236,6 @@ func PolynomialMakeMonic(f []int64, char int64) []int64 {
 }
 
 func PolynomialGcd(f []int64, g []int64, char int64) []int64 {
-	// assume deg(f) <= deg(g)
 	if len(f) > len(g) {
 		return PolynomialGcd(g, f, char)
 	}
