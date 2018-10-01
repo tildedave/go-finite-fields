@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 func createMatrix(size int) [][]int64 {
 	matrix := make([][]int64, size)
 	for i := range matrix {
@@ -90,8 +86,11 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	// Compute Q - I where I is the unit matrix
 	// The kth row is x^(kp) mod f.  We skip the first row because Q - I is always 0.
 	for k := 1; k < n; k++ {
-		matrix[k] = PolynomialModExp(unit, int64(k)*char, f, char)
-		matrix[k][k] -= int64(1)
+		t := make([]int64, n)
+		p := PolynomialModExp(unit, int64(k)*char, f, char)
+		copy(t, p)
+		matrix[k] = t
+		matrix[k][k] = (matrix[k][k] + char - int64(1)) % char
 	}
 
 	// Find null space for Q - I
@@ -100,7 +99,6 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	// For each vector, compute GCD for u(x), vec - s for 0 <= s < p.
 	// The result gives a nontrivial factorization of u.
 	// The vector that results in r factors is the one
-
 	solutions := make([][]int64, numSolutions)
 
 	for _, vec := range vecs[1:] {
@@ -120,7 +118,6 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 		}
 	}
 
-	// error! :(
-	msg := fmt.Sprintf("Unable to factor %s", PolynomialToString(f))
-	panic(msg)
+	// irreducible polynomial
+	return [][]int64{}
 }

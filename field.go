@@ -143,6 +143,12 @@ func PolynomialTrunc(f []int64) []int64 {
 func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 	// return f1 / f2
 	// for now assume deg(f1 <= f2)
+	if len(g) < len(f) {
+		// q = 0, r = g
+		r := make([]int64, len(g))
+		copy(r, g)
+		return []int64{}, r
+	}
 
 	// d1 := PolynomialDegree(f1)
 	// synthetic division
