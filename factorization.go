@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-var _ = fmt.Println
-
 func createMatrix(size int) [][]int64 {
 	matrix := make([][]int64, size)
 	for i := range matrix {
@@ -15,29 +13,19 @@ func createMatrix(size int) [][]int64 {
 	return matrix
 }
 
-func computeNullSpace(matrix [][]int64, n int, char int64) [][]int64 {
+func computeNullSpace(matrix [][]int64, n int, char int64) ([][]int64, int) {
 	cols := make([]int, n)
 	for i := range cols {
 		cols[i] = -1
 	}
 	r := 0
 
-	matchBookExample := make([]int, n)
-	matchBookExample[1] = 5
-	matchBookExample[2] = 4
-	matchBookExample[3] = 2
-	matchBookExample[4] = 7
-	matchBookExample[5] = 1
-
 	vecs := make([][]int64, n)
 
 OUTER:
 	for k := 0; k < n; k++ {
-		fmt.Printf("k=%d, matrix=%v\n", k, matrix)
-
 		for j := 0; j < n; j++ {
-			if matrix[k][j] != 0 && cols[j] < 0 && matchBookExample[k] == j {
-				fmt.Printf("mutating array based on j=%d\n", j)
+			if matrix[k][j] != 0 && cols[j] < 0 {
 				// time to compute
 				// multiply column j of matrix by -1/matrix[k][j]
 				a := matrix[k][j]
@@ -84,11 +72,11 @@ OUTER:
 			}
 		}
 
-		vecs[r] = vec
+		vecs[r] = PolynomialTrunc(vec)
 		r++
 	}
 
-	return vecs[0:r]
+	return vecs[0:r], r
 
 }
 
@@ -97,7 +85,6 @@ OUTER:
 func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	n := len(f) - 1
 	matrix := createMatrix(n)
-	fmt.Println(matrix)
 	unit := []int64{0, 1}
 
 	// Compute Q - I where I is the unit matrix
@@ -108,19 +95,32 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	}
 
 	// Find null space for Q - I
-	vecs := computeNullSpace(matrix, n, char)
+	vecs, numSolutions := computeNullSpace(matrix, n, char)
 
 	// For each vector, compute GCD for u(x), vec - s for 0 <= s < p.
 	// The result gives a nontrivial factorization of u.
+	// The vector that results in r factors is the one
+
+	solutions := make([][]int64, numSolutions)
 
 	for _, vec := range vecs[1:] {
+		foundSolutions := 0
 		for s := int64(0); s < char; s++ {
 			unit := []int64{char - s}
 			p1 := PolynomialAdd(vec, unit, char)
 			p := PolynomialGcd(p1, f, char)
-			fmt.Printf("GCD(%s, %s) = %s\n", PolynomialToString(p1), PolynomialToString(f), PolynomialToString(p))
+			if len(p) != 1 {
+				solutions[foundSolutions] = p
+				foundSolutions++
+			}
+		}
+
+		if foundSolutions == numSolutions {
+			return solutions
 		}
 	}
 
-	return vecs
+	// error! :(
+	msg := fmt.Sprintf("Unable to factor %s", PolynomialToString(f))
+	panic(msg)
 }
