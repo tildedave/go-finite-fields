@@ -76,8 +76,8 @@ OUTER:
 
 }
 
-// FactorBerlekamp factors the given polynomial f into irreducible factors using Berlekamp's
-// algorithm.  This follows the implementation given in TAoCP 6.4.2.
+// FactorBerlekamp factors the given squarefree polynomial f into irreducible factors using
+// Berlekamp's algorithm.  This follows the implementation given in TAoCP 6.4.2.
 func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	n := len(f) - 1
 	matrix := createMatrix(n)
@@ -96,28 +96,76 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	// Find null space for Q - I
 	vecs, numSolutions := computeNullSpace(matrix, n, char)
 
+	// Polynomial is irreducible
+	if numSolutions == 1 {
+		return [][]int64{}
+	}
+
 	// For each vector, compute GCD for u(x), vec - s for 0 <= s < p.
 	// The result gives a nontrivial factorization of u.
-	// The vector that results in r factors is the one
-	solutions := make([][]int64, numSolutions)
+	// We push each nontrivial factorization of u onto a list and
+	// then continue to reduce.
+	factors := make([][]int64, numSolutions)
+	foundFactors := 0
 
-	for _, vec := range vecs[1:] {
-		foundSolutions := 0
-		for s := int64(0); s < char; s++ {
-			unit := []int64{char - s}
-			p1 := PolynomialAdd(vec, unit, char)
-			p := PolynomialGcd(p1, f, char)
-			if len(p) != 1 {
-				solutions[foundSolutions] = p
-				foundSolutions++
+	isFactorNew := func(p []int64) bool {
+		for i := 0; i < foundFactors; i++ {
+			f := factors[i]
+			if PolynomialsAreEqual(p, f) {
+				// already found this factor, nothing to do
+				return false
 			}
 		}
 
-		if foundSolutions == numSolutions {
-			return solutions
+		return true
+	}
+
+	// vecs[1] provides a non-trivial factoring of f
+	vec := vecs[1]
+	for s := int64(0); s < char; s++ {
+		unit := []int64{char - s}
+		p1 := PolynomialAdd(vec, unit, char)
+		p := PolynomialGcd(p1, f, char)
+		if len(p) != 1 {
+			// yay!
+			factors[foundFactors] = p
+			foundFactors++
 		}
 	}
 
-	// irreducible polynomial
-	return [][]int64{}
+	// If vecs[1] split f into irreducibles we're done
+	if foundFactors == numSolutions {
+		return factors
+	}
+
+	// Otherwise, we use the other factorings to narrow down
+	for _, vec := range vecs[2:] {
+		for i := 0; i < foundFactors; i++ {
+			factor := factors[i]
+			for s := int64(0); s < char; s++ {
+				unit := []int64{char - s}
+				p1 := PolynomialAdd(vec, unit, char)
+				p := PolynomialGcd(p1, factor, char)
+
+				if len(p) != 1 {
+					if isFactorNew(p) {
+						// GCD(p, factor) was non-trivial, so factor was not irreducible
+						factors[i] = p
+
+						// See if we've seen factor / q yet
+						q, _ := PolynomialDivide(p, factor, char)
+						if isFactorNew(q) {
+							factors[foundFactors] = q
+							foundFactors++
+							if foundFactors == numSolutions {
+								return factors
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	panic("Bug in factorization, should never get here")
 }

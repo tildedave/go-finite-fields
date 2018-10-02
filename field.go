@@ -259,5 +259,21 @@ func PolynomialIsSquareFree(f []int64, char int64) bool {
 	deriv := PolynomialDerivative(f, char)
 	gcd := PolynomialGcd(f, deriv, char)
 
-	return len(gcd) == 1
+	return len(PolynomialTrunc(gcd)) == 1
+}
+
+// PolynomialsAreEqual returns true if the two polynomials are equal.
+// This function does not check for leading zeroes.
+func PolynomialsAreEqual(f []int64, g []int64) bool {
+	if len(f) != len(g) {
+		return false
+	}
+
+	for i := range f {
+		if f[i] != g[i] {
+			return false
+		}
+	}
+
+	return true
 }
