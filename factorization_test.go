@@ -23,10 +23,17 @@ func TestFactorBerlekamp2(t *testing.T) {
 	u := make([]int64, 17)
 	u[16] = 1
 	u[1] = 1
-	fmt.Println(PolynomialToString(u))
 
+	// These are all the irreducibles of degree 4
 	solutions := FactorBerlekamp(u, 2)
-	fmt.Println(solutions)
+	assert.Equal(t, 6, len(solutions))
+	assert.Contains(t, solutions, []int64{1, 1, 1, 1, 1})
+	assert.Contains(t, solutions, []int64{1, 1, 0, 0, 1})
+	assert.Contains(t, solutions, []int64{1, 0, 0, 1, 1})
+	assert.Contains(t, solutions, []int64{0, 1})
+	assert.Contains(t, solutions, []int64{1, 1})
+	assert.Contains(t, solutions, []int64{1, 1, 1})
+	// assert.Contains(t, solutions, []int64{6, 4, 3, 2, 1})
 }
 
 func TestFactorBerlekampIrreducible(t *testing.T) {
