@@ -35,13 +35,64 @@ func IsPrime(p int64) bool {
 		return false
 	}
 
-	for i := int64(3); i < isqrt(p); i++ {
+	for i := int64(3); i <= isqrt(p); i++ {
 		if p%i == 0 {
 			return false
 		}
 	}
 
 	return true
+}
+
+// PrimeDivisors returns the prime divisors of the number with multiplicity.
+func PrimeDivisors(n int64) []int64 {
+	divisors := make([]int64, n)
+	numDivisors := 0
+
+	for i := int64(2); i <= n; i++ {
+		if n%i != 0 {
+			// not a divisor
+			continue
+		}
+
+		for n%i == 0 {
+			n = n / i
+			divisors[numDivisors] = i
+			numDivisors++
+		}
+	}
+
+	if numDivisors == 0 {
+		divisors[numDivisors] = n
+		numDivisors++
+	}
+
+	return divisors[0:numDivisors]
+}
+
+// MobiusInversion returns:
+// 1 if the number = 1
+// 0 if the number contains a square divisor
+// 1 if the number contains an even number of prime divisors
+// -1 if the number contains an odd number of prime divisors
+func MobiusInversion(n int64) int {
+	if n == 1 {
+		return 1
+	}
+
+	divisors := PrimeDivisors(n)
+	for i := 0; i < len(divisors)-1; i++ {
+		if divisors[i] == divisors[i+1] {
+			// number is a square
+			return 0
+		}
+	}
+
+	if len(divisors)%2 == 0 {
+		return 1
+	}
+
+	return -1
 }
 
 func ModExp(m int64, n int64, p int64) int64 {
