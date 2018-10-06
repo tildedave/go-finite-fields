@@ -95,6 +95,22 @@ func MobiusInversion(n int64) int {
 	return -1
 }
 
+// Exp returns m^n using the method of repeated squaring
+func Exp(m int64, n int) int64 {
+	var pow int64 = 1
+
+	for n > 0 {
+		if n%2 == 1 {
+			pow = (pow * m)
+		}
+		m = m * m
+		n = n / 2
+	}
+
+	return pow
+}
+
+// ModExp returns m^n mod p using the method of repeated squaring
 func ModExp(m int64, n int64, p int64) int64 {
 	var pow int64 = 1
 
