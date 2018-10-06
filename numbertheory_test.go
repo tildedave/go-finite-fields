@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var _ = fmt.Println
@@ -35,4 +36,23 @@ func TestIsPrime(t *testing.T) {
 	assert.True(t, IsPrime(11))
 	assert.False(t, IsPrime(12))
 	assert.True(t, IsPrime(13))
+	assert.False(t, IsPrime(16))
+	assert.False(t, IsPrime(25))
+}
+
+func TestPrimeDivisors(t *testing.T) {
+	assert.Equal(t, []int64{2, 5, 5}, PrimeDivisors(50))
+	assert.Equal(t, []int64{2, 3}, PrimeDivisors(6))
+}
+
+func TestMobiusInversion(t *testing.T) {
+	assert.Equal(t, 1, MobiusInversion(1))
+	assert.Equal(t, -1, MobiusInversion(2))
+	assert.Equal(t, -1, MobiusInversion(3))
+	assert.Equal(t, 0, MobiusInversion(4))
+	assert.Equal(t, -1, MobiusInversion(5))
+	assert.Equal(t, 1, MobiusInversion(6))
+	assert.Equal(t, -1, MobiusInversion(7))
+	assert.Equal(t, 0, MobiusInversion(8))
+	assert.Equal(t, 0, MobiusInversion(9))
 }
