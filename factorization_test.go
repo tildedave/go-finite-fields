@@ -24,7 +24,7 @@ func TestFactorBerlekamp2(t *testing.T) {
 	u[16] = 1
 	u[1] = 1
 
-	// These are all the irreducibles of degree 4
+	// These are all the irreducibles of degree <= 4
 	solutions := FactorBerlekamp(u, 2)
 	assert.Equal(t, 6, len(solutions))
 	assert.Contains(t, solutions, []int64{1, 1, 1, 1, 1})
