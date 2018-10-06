@@ -72,6 +72,28 @@ func TestFactorBerlekamp3(t *testing.T) {
 	assert.Equal(t, 9, countByDegree(solutions, 6))
 }
 
+func TestFactorBerlekamp4(t *testing.T) {
+	u := make([]int64, 28)
+	u[27] = 1
+	u[1] = 2
+
+	solutions := FactorBerlekamp(u, 3)
+	assert.Equal(t, 11, len(solutions))
+	assert.Contains(t, solutions, []int64{0, 1})
+	assert.Contains(t, solutions, []int64{1, 1})
+	assert.Contains(t, solutions, []int64{2, 1})
+	assert.Contains(t, solutions, []int64{1, 2, 0, 1})
+	assert.Contains(t, solutions, []int64{2, 2, 0, 1})
+	assert.Contains(t, solutions, []int64{2, 0, 1, 1})
+	assert.Contains(t, solutions, []int64{2, 1, 1, 1})
+	assert.Contains(t, solutions, []int64{1, 2, 1, 1})
+	assert.Contains(t, solutions, []int64{1, 0, 2, 1})
+	assert.Contains(t, solutions, []int64{1, 1, 2, 1})
+	assert.Contains(t, solutions, []int64{2, 2, 2, 1})
+
+	assert.Equal(t, u, multiplySolutions(solutions, 3))
+}
+
 func TestFactorBerlekampIrreducible(t *testing.T) {
 	p := []int64{1, 1, 0, 0, 1}
 	solutions := FactorBerlekamp(p, 2)
