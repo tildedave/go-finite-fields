@@ -169,3 +169,43 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 
 	panic("Bug in factorization, should never get here")
 }
+
+// FactorDistinctDegree uses the distinct degree factorization method from TAoCP 4.6.2.
+// It assumes f is squarefree.
+// The basic idea is to use GCDs with x^p^d - x to find irreducibles of degree d that divide f.
+// The end result is a non-trivial factorization of f.  The individual polynomials may not be irreducible.
+func FactorDistinctDegree(f []int64, char int64) [][]int64 {
+	v := f
+	unit := []int64{0, 1}
+	w := unit
+	d := 0
+	solutions := make([][]int64, PolynomialDegree(f))
+	numSolutions := 0
+
+	// invariant: w = x^p^d mod v
+
+	for {
+		if d+1 > PolynomialDegree(v)/2 {
+			if len(v) > 1 {
+				solutions[numSolutions] = v
+				numSolutions++
+			}
+			return solutions[0:numSolutions]
+		}
+
+		d = d + 1
+		w = PolynomialModExp(w, char, v, char)
+
+		// g_d(x) = gcd(w - x, v(x))
+		gd := PolynomialGcd(PolynomialSubtract(w, unit, char), v, char)
+
+		if len(gd) != 1 {
+			v, _ = PolynomialDivide(gd, v, char)
+			w = PolynomialMod(w, v, char)
+
+			// NOTE: if degree(gd) > d, gd is not irreducible
+			solutions[numSolutions] = gd
+			numSolutions++
+		}
+	}
+}

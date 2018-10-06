@@ -68,3 +68,28 @@ func TestFactorBerlekampIrreducible(t *testing.T) {
 	solutions := FactorBerlekamp(p, 2)
 	assert.Equal(t, 0, len(solutions))
 }
+
+func TestFactorDistinctDegree(t *testing.T) {
+	u := []int64{8, 2, 8, 10, 10, 0, 1, 0, 1}
+
+	solutions := FactorDistinctDegree(u, 13)
+	assert.Equal(t, 3, len(solutions))
+	assert.Contains(t, solutions, []int64{3, 1})
+	assert.Contains(t, solutions, []int64{12, 4, 8, 1})
+	assert.Contains(t, solutions, []int64{6, 4, 3, 2, 1})
+}
+func TestFactorDistinctDegree2(t *testing.T) {
+	u := make([]int64, 65)
+	u[64] = 1
+	u[1] = 1
+
+	// These are all the irreducibles of degree <= 6
+	solutions := FactorDistinctDegree(u, 2)
+	// degree 1 (2 irreducibles) degree 2 (1), degree 3 (2) degree 6 (9)
+
+	v := []int64{1}
+	for _, solution := range solutions {
+		v = PolynomialMultiply(v, solution, 2)
+	}
+	assert.Equal(t, v, u)
+}
