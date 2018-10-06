@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 )
 
 type Polynomial struct {
@@ -79,6 +80,11 @@ func PolynomialAdd(f1 []int64, f2 []int64, char int64) []int64 {
 	}
 
 	return add
+}
+
+// PolynomialSubtract subtracts one polynomial from another mod char.
+func PolynomialSubtract(f1 []int64, f2 []int64, char int64) []int64 {
+	return PolynomialAdd(f1, PolynomialScalar(f2, char-1, char), char)
 }
 
 func PolynomialScalarMod(f []int64, char int64) []int64 {
@@ -276,4 +282,15 @@ func PolynomialsAreEqual(f []int64, g []int64) bool {
 	}
 
 	return true
+}
+
+// PolynomialRandom returns a monic polynomial of degree d with random coefficients
+// in the range [0...char-1].
+func PolynomialRandom(r *rand.Rand, d int, char int64) []int64 {
+	poly := make([]int64, d+1)
+	for i := 0; i < d; i++ {
+		poly[i] = r.Int63n(char)
+	}
+
+	return PolynomialMakeMonic(poly, char)
 }
