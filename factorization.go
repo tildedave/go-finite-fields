@@ -1,5 +1,9 @@
 package main
 
+import (
+	"math/rand"
+)
+
 func createMatrix(size int) [][]int64 {
 	matrix := make([][]int64, size)
 	for i := range matrix {
@@ -126,7 +130,7 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 		unit := []int64{char - s}
 		p1 := PolynomialAdd(vec, unit, char)
 		p := PolynomialGcd(p1, f, char)
-		if len(p) != 1 {
+		if len(p) > 1 {
 			// yay!
 			factors[foundFactors] = p
 			foundFactors++
@@ -147,7 +151,7 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 				p1 := PolynomialAdd(vec, unit, char)
 				p := PolynomialGcd(p1, factor, char)
 
-				if len(p) != 1 {
+				if len(p) > 1 {
 					if isFactorNew(p) {
 						// GCD(p, factor) was non-trivial, so factor was not irreducible
 						factors[i] = p
@@ -170,16 +174,21 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	panic("Bug in factorization, should never get here")
 }
 
+type DistinctDegreeFactor struct {
+	factor []int64
+	degree int
+}
+
 // FactorDistinctDegree uses the distinct degree factorization method from TAoCP 4.6.2.
 // It assumes f is squarefree.
 // The basic idea is to use GCDs with x^p^d - x to find irreducibles of degree d that divide f.
 // The end result is a non-trivial factorization of f.  The individual polynomials may not be irreducible.
-func FactorDistinctDegree(f []int64, char int64) [][]int64 {
+func FactorDistinctDegree(f []int64, char int64) []DistinctDegreeFactor {
 	v := f
 	unit := []int64{0, 1}
 	w := unit
 	d := 0
-	solutions := make([][]int64, PolynomialDegree(f))
+	solutions := make([]DistinctDegreeFactor, PolynomialDegree(f))
 	numSolutions := 0
 
 	// invariant: w = x^p^d mod v
@@ -187,7 +196,10 @@ func FactorDistinctDegree(f []int64, char int64) [][]int64 {
 	for {
 		if d+1 > PolynomialDegree(v)/2 {
 			if len(v) > 1 {
-				solutions[numSolutions] = v
+				// TODO: not sure if degree is correct here
+				solutions[numSolutions] = DistinctDegreeFactor{
+					degree: PolynomialDegree(v),
+					factor: v}
 				numSolutions++
 			}
 			return solutions[0:numSolutions]
@@ -195,17 +207,100 @@ func FactorDistinctDegree(f []int64, char int64) [][]int64 {
 
 		d = d + 1
 		w = PolynomialModExp(w, char, v, char)
-
 		// g_d(x) = gcd(w - x, v(x))
-		gd := PolynomialGcd(PolynomialSubtract(w, unit, char), v, char)
+		g := PolynomialTrunc(PolynomialSubtract(w, unit, char))
 
-		if len(gd) != 1 {
+		if len(g) == 0 {
+			// x^p^d - x cleanly divides v.  this means that v is a product of
+			// all irreducibles of degree d.  we don't need to factor it further.
+
+			solutions[numSolutions] = DistinctDegreeFactor{degree: d, factor: v}
+			numSolutions++
+
+			return solutions[0:numSolutions]
+		}
+
+		gd := PolynomialGcd(g, v, char)
+
+		if len(gd) > 1 {
 			v, _ = PolynomialDivide(gd, v, char)
 			w = PolynomialMod(w, v, char)
 
 			// NOTE: if degree(gd) > d, gd is not irreducible
-			solutions[numSolutions] = gd
+			solutions[numSolutions] = DistinctDegreeFactor{degree: d, factor: gd}
 			numSolutions++
 		}
 	}
+}
+
+func FactorCantorZassenhaus(r *rand.Rand, f []int64, char int64) [][]int64 {
+	if char == 2 {
+		panic("Don't yet support factorization for p = 2")
+	}
+
+	factors := make([][]int64, len(f))
+	numFactors := 0
+	distinctDegreeFactors := FactorDistinctDegree(f, char)
+
+	for _, solution := range distinctDegreeFactors {
+		degreeFactors := make([][]int64, 0)
+
+		// split solution.factor into its distinct factors, all with the same degree
+		queue := make([][]int64, 1)
+		queue[0] = solution.factor
+
+		for len(queue) > 0 {
+			first := queue[0]
+			queue = queue[1:]
+
+			if PolynomialDegree(first) == solution.degree {
+				degreeFactors = append(degreeFactors, first)
+			} else {
+				g := FactorEqualDegree(r, first, solution.degree, char)
+				q, _ := PolynomialDivide(g, first, char)
+				queue = append(append(queue, q), g)
+			}
+		}
+
+		for _, factor := range degreeFactors {
+			factors[numFactors] = factor
+			numFactors++
+		}
+	}
+
+	return factors[0:numFactors]
+}
+
+// FactorEqualDegree uses a random generator to find an irreducible factor of f.
+func FactorEqualDegree(r *rand.Rand, f []int64, d int, char int64) []int64 {
+	const numIterations = 500
+
+	for i := 0; i < numIterations; i++ {
+		factor := factorEqualDegreeAttempt(r, f, d, char)
+		if factor != nil {
+			return factor
+		}
+	}
+
+	panic("No factor after trying a bunch")
+}
+
+func factorEqualDegreeAttempt(r *rand.Rand, f []int64, d int, char int64) []int64 {
+	a := PolynomialRandom(r, PolynomialDegree(f)-1, char)
+	p := PolynomialGcd(f, a, char)
+
+	if len(p) > 1 {
+		// somehow p is a factor
+		return p
+	}
+
+	p = PolynomialModExp(a, Exp(char, d)-1, f, char)
+	p[0] = (p[0] + 1) % char
+	g := PolynomialGcd(p, f, char)
+
+	if len(g) > 1 {
+		return g
+	}
+
+	return nil
 }

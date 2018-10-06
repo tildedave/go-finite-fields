@@ -288,9 +288,13 @@ func PolynomialsAreEqual(f []int64, g []int64) bool {
 // in the range [0...char-1].
 func PolynomialRandom(r *rand.Rand, d int, char int64) []int64 {
 	poly := make([]int64, d+1)
-	for i := 0; i < d; i++ {
-		poly[i] = r.Int63n(char)
+	for i := 0; i <= d; i++ {
+		if i == d {
+			poly[i] = 1
+		} else {
+			poly[i] = r.Int63n(char)
+		}
 	}
 
-	return PolynomialMakeMonic(poly, char)
+	return poly
 }
