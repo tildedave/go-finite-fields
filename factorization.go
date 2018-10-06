@@ -168,7 +168,6 @@ func FactorDistinctDegree(f []int64, char int64) []DistinctDegreeFactor {
 	for {
 		if d+1 > PolynomialDegree(v)/2 {
 			if len(v) > 1 {
-				// TODO: not sure if degree is correct here
 				solutions[numSolutions] = DistinctDegreeFactor{
 					degree: PolynomialDegree(v),
 					factor: v}
