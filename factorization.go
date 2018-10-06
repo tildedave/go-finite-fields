@@ -112,18 +112,6 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	factors := make([][]int64, numSolutions)
 	foundFactors := 0
 
-	isFactorNew := func(p []int64) bool {
-		for i := 0; i < foundFactors; i++ {
-			f := factors[i]
-			if PolynomialsAreEqual(p, f) {
-				// already found this factor, nothing to do
-				return false
-			}
-		}
-
-		return true
-	}
-
 	// vecs[1] provides a non-trivial factoring of f
 	vec := vecs[1]
 	for s := int64(0); s < char; s++ {
@@ -142,33 +130,32 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 		return factors
 	}
 
-	// Otherwise, we use the other factorings to narrow down
+	// Invariant that we need: factors is always a factorization of f.
+
 	for _, vec := range vecs[2:] {
+	Factor:
 		for i := 0; i < foundFactors; i++ {
 			factor := factors[i]
 			for s := int64(0); s < char; s++ {
 				unit := []int64{char - s}
 				p1 := PolynomialAdd(vec, unit, char)
 				p := PolynomialGcd(p1, factor, char)
+				q, _ := PolynomialDivide(p, factor, char)
 
-				if len(p) > 1 {
-					if isFactorNew(p) {
-						// GCD(p, factor) was non-trivial, so factor was not irreducible
-						factors[i] = p
+				if len(p) > 1 && len(q) > 1 {
 
-						// See if we've seen factor / q yet
-						q, _ := PolynomialDivide(p, factor, char)
-						if isFactorNew(q) {
-							factors[foundFactors] = q
-							foundFactors++
-							if foundFactors == numSolutions {
-								return factors
-							}
-						}
-					}
+					factors[i] = p
+					factors[foundFactors] = q
+					foundFactors++
+
+					continue Factor
 				}
 			}
 		}
+	}
+
+	if foundFactors == numSolutions {
+		return factors
 	}
 
 	panic("Bug in factorization, should never get here")
