@@ -109,53 +109,38 @@ func FactorBerlekamp(f []int64, char int64) [][]int64 {
 	// The result gives a nontrivial factorization of u.
 	// We push each nontrivial factorization of u onto a list and
 	// then continue to reduce.
-	factors := make([][]int64, numSolutions)
-	foundFactors := 0
+	factorization := make([][]int64, numSolutions)
+	factorization[0] = f
+	foundFactors := 1
 
-	// vecs[1] provides a non-trivial factoring of f
-	vec := vecs[1]
-	for s := int64(0); s < char; s++ {
-		unit := []int64{char - s}
-		p1 := PolynomialAdd(vec, unit, char)
-		p := PolynomialGcd(p1, f, char)
-		if len(p) > 1 {
-			// yay!
-			factors[foundFactors] = p
-			foundFactors++
-		}
-	}
-
-	// If vecs[1] split f into irreducibles we're done
-	if foundFactors == numSolutions {
-		return factors
-	}
-
-	// Invariant that we need: factors is always a factorization of f.
-
-	for _, vec := range vecs[2:] {
+	// Invariant: factors is always a factorization of f.
+	for _, vec := range vecs {
 	Factor:
 		for i := 0; i < foundFactors; i++ {
-			factor := factors[i]
+			factor := factorization[i]
 			for s := int64(0); s < char; s++ {
 				unit := []int64{char - s}
 				p1 := PolynomialAdd(vec, unit, char)
 				p := PolynomialGcd(p1, factor, char)
-				q, _ := PolynomialDivide(p, factor, char)
 
-				if len(p) > 1 && len(q) > 1 {
+				if len(p) > 1 {
+					q, _ := PolynomialDivide(p, factor, char)
 
-					factors[i] = p
-					factors[foundFactors] = q
-					foundFactors++
+					// p + q is a non-trivial breakdown of the
+					if len(q) > 1 {
+						factorization[i] = p
+						factorization[foundFactors] = q
+						foundFactors++
 
-					continue Factor
+						continue Factor
+					}
 				}
 			}
 		}
 	}
 
 	if foundFactors == numSolutions {
-		return factors
+		return factorization
 	}
 
 	panic("Bug in factorization, should never get here")
