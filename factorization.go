@@ -265,7 +265,7 @@ func factorEqualDegreeAttempt(r *rand.Rand, f []int64, d int, char int64) []int6
 		return p
 	}
 
-	p = PolynomialModExp(a, Exp(char, d)-1, f, char)
+	p = PolynomialModExp(a, (Exp(char, d)-1)/2, f, char)
 	p[0] = (p[0] + 1) % char
 	g := PolynomialGcd(p, f, char)
 
