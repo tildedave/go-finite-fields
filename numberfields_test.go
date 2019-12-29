@@ -13,4 +13,10 @@ func TestComputeNumberFieldSignature(t *testing.T) {
 	assert.Equal(t, NumberFieldSignature{numReal: 0, numComplex: 1},
 		ComputeNumberFieldSignature([]int64{1, 1, 1}),
 		"x^2 + x + 1 should have had 1 complex embedding")
+	assert.Equal(t, NumberFieldSignature{numReal: 2, numComplex: 0},
+		ComputeNumberFieldSignature([]int64{-2, 0, 1}),
+		"x^2 - 2 should have had 2 real embeddings")
+	assert.Equal(t, NumberFieldSignature{numReal: 0, numComplex: 1},
+		ComputeNumberFieldSignature([]int64{2, 0, 1}),
+		"x^2 + 2 should have had 1 complex embedding")
 }
