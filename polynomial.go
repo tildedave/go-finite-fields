@@ -53,8 +53,16 @@ func PolynomialPrimitivePart(p []int64) []int64 {
 		return p
 	}
 
-	var d int64 = p[0]
-	for i := 1; i < len(p); i++ {
+	var i = 0
+	var d int64
+	for p[i] == 0 && i < len(p) {
+		i++
+	}
+	d = p[i]
+	for ; i < len(p); i++ {
+		if p[i] == 0 {
+			continue
+		}
 		d = GCD(d, p[i])
 	}
 
@@ -71,7 +79,7 @@ func PolynomialPrimitivePart(p []int64) []int64 {
 // PolynomialLeadingCoefficient returns the leading coefficient of a polynomial.
 // For a monic polynomial this will be 1.
 func PolynomialLeadingCoefficient(p []int64) int64 {
-	return p[0]
+	return p[PolynomialDegree(p)]
 }
 
 func PolynomialAdd(f1 []int64, f2 []int64, char int64) []int64 {
@@ -82,8 +90,10 @@ func PolynomialAdd(f1 []int64, f2 []int64, char int64) []int64 {
 	add := make([]int64, len(f2))
 	copy(add, f2)
 	for i, x := range f1 {
-		add[i] = (add[i] + x) % char
+		add[i] = add[i] + x
 	}
+
+	PolynomialReduceByCharacteristic(add, char)
 
 	return add
 }
@@ -118,7 +128,10 @@ func PolynomialMultiply(f []int64, g []int64, char int64) []int64 {
 		for i := 0; i <= n; i++ {
 			j := n - i
 			if i < len(f) && j < len(g) {
-				result[n] = (result[n] + f[i]*g[j]) % char
+				result[n] = result[n] + f[i]*g[j]
+				if char != 0 {
+					result[n] = result[n] % char
+				}
 			}
 		}
 	}
@@ -176,6 +189,7 @@ func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 	inv := ModInverse(f[len(f)-1], char)
 
 	for i := len(g) - 1; i >= len(f)-1; i-- {
+		// TODO: generalize to no characteristic
 		out[i] = (out[i] * inv) % char
 		x := out[i]
 
@@ -200,6 +214,44 @@ func PolynomialDivide(f []int64, g []int64, char int64) ([]int64, []int64) {
 	return q, r
 }
 
+// PolynomialPsuedoDivide performs "psuedo-division" on the two polynomials A and B.
+// It returns Q and R such that d^{m - n + 1} A = BQ + R
+// * d = the leading coefficient of B
+// * m = degree of A
+// * n = degree of B
+//
+// The only requirement is that the coefficients be rings.
+// Algorithm 3.1.2, page 112.
+func PolynomialPsuedoDivide(a []int64, b []int64) ([]int64, []int64) {
+	rPoly := make([]int64, len(a))
+	copy(rPoly, a)
+	m := PolynomialDegree(a)
+	n := PolynomialDegree(b)
+	if m <= n {
+		panic(fmt.Sprintf("Unable to use psuedo-division: attempted to divide %s into %s",
+			PolynomialToString(a), PolynomialToString(b)))
+	}
+	d := PolynomialLeadingCoefficient(b)
+	qPoly := []int64{0}
+	e := m - n + 1
+	for e >= 0 {
+		if PolynomialDegree(rPoly) < PolynomialDegree(b) {
+			q := IntExp(d, int64(e))
+			qPoly = PolynomialScalar(qPoly, q, 0)
+			rPoly = PolynomialScalar(rPoly, q, 0)
+			return qPoly, rPoly
+		}
+
+		sPoly := make([]int64, PolynomialDegree(rPoly)-PolynomialDegree(b)+1)
+		sPoly[len(sPoly)-1] = PolynomialLeadingCoefficient(rPoly)
+		qPoly = PolynomialTrunc(PolynomialAdd(PolynomialScalar(qPoly, d, 0), sPoly, 0))
+		rPoly = PolynomialTrunc(PolynomialAdd(PolynomialScalar(rPoly, d, 0), PolynomialScalar(PolynomialMultiply(sPoly, b, 0), -1, 0), 0))
+		e--
+	}
+
+	panic("fallthrough")
+}
+
 // PolynomialMod computes the polynomial f modulo the polynomial g.
 //
 // Example: x^2 + x + 1 = x + 1 mod x^2.
@@ -208,14 +260,8 @@ func PolynomialMod(g []int64, f []int64, char int64) []int64 {
 	return r
 }
 
-// PolynomialModExp computes the modular exponent of f to the nth power,
-// modulo a given polynomial.
-//
-// This will give a correct but stupid way to compute the rows of Berlekamp's algorithm.
-// Potentially we will want to invoke the modulus after each step of the algorithm to
-// avoid things like x^96 creating giant slices that we then waste a bunch of time
-// dividing.
-func PolynomialModExp(f []int64, n int64, mod []int64, char int64) []int64 {
+// PolynomialExp computes the exponent of f to the nth power.
+func PolynomialExp(f []int64, n int64, char int64) []int64 {
 	pow := []int64{1}
 
 	for n > 0 {
@@ -227,12 +273,36 @@ func PolynomialModExp(f []int64, n int64, mod []int64, char int64) []int64 {
 		n = n / 2
 	}
 
+	return pow
+}
+
+// PolynomialModExp computes the modular exponent of f to the nth power,
+// modulo a given polynomial.
+//
+// This will give a correct but stupid way to compute the rows of Berlekamp's algorithm.
+// Potentially we will want to invoke the modulus after each step of the algorithm to
+// avoid things like x^96 creating giant slices that we then waste a bunch of time
+// dividing.
+func PolynomialModExp(f []int64, n int64, mod []int64, char int64) []int64 {
+	pow := PolynomialExp(f, n, char)
 	return PolynomialMod(pow, mod, char)
 }
 
 // PolynomialDivides returns whether or not f is a factor of g.
 func PolynomialDivides(f []int64, g []int64, char int64) bool {
 	return len(PolynomialMod(g, f, char)) == 0
+}
+
+func PolynomialReduceByCharacteristic(f []int64, char int64) []int64 {
+	if char == 0 {
+		return f
+	}
+
+	for i := range f {
+		f[i] = f[i] % char
+	}
+
+	return f
 }
 
 // PolynomialDerivative computes the symbolic derivative of f.
@@ -245,11 +315,8 @@ func PolynomialDerivative(f []int64, char int64) []int64 {
 	for i := int64(len(f) - 1); i >= 1; i-- {
 		out[i-1] = (f[i] * i)
 	}
-	if char != 0 {
-		for i := range out {
-			out[i] = out[i] % char
-		}
-	}
+
+	PolynomialReduceByCharacteristic(out, char)
 
 	return out
 }
