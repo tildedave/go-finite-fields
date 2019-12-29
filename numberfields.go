@@ -13,7 +13,7 @@ func signLeadingCoefficient(p []int64) int {
 	return 1
 }
 
-// Return the signature r1, r2 of the passed in polynomial using Sturm's Theorem and the sub-resultant Algorithm.package fields
+// ComputeNumberFieldSignature will the signature r1, r2 of the passed in polynomial using Sturm's Theorem. r1 + 2*r2 = n
 // A Course In Computational Number Theory, pg 156
 func ComputeNumberFieldSignature(tPoly []int64) NumberFieldSignature {
 	result := NumberFieldSignature{}
