@@ -44,6 +44,36 @@ func PolynomialDegree(f1 []int64) int {
 	return len(f1) - 1
 }
 
+// PolynomialPrimitivePart returns the "primitive part" of a polynomial.
+// This is the polynomial with the common GCD terms removed.
+// (Course in Computational Number Theory 3.2.3)
+// If the polynomial is already primitive, the existing slice will be returned.
+func PolynomialPrimitivePart(p []int64) []int64 {
+	if len(p) == 1 {
+		return p
+	}
+
+	var d int64 = p[0]
+	for i := 1; i < len(p); i++ {
+		d = GCD(d, p[i])
+	}
+
+	if d == 1 {
+		return p
+	}
+	f := make([]int64, len(p))
+	for i, coeff := range p {
+		f[i] = coeff / d
+	}
+	return f
+}
+
+// PolynomialLeadingCoefficient returns the leading coefficient of a polynomial.
+// For a monic polynomial this will be 1.
+func PolynomialLeadingCoefficient(p []int64) int64 {
+	return p[0]
+}
+
 func PolynomialAdd(f1 []int64, f2 []int64, char int64) []int64 {
 	if len(f1) > len(f2) {
 		return PolynomialAdd(f2, f1, char)
@@ -101,7 +131,13 @@ func PolynomialScalar(f []int64, c int64, char int64) []int64 {
 	copy(q, f)
 
 	for i, x := range f {
-		q[i] = (x * c) % char
+		q[i] = x * c
+	}
+
+	if char != 0 {
+		for i, x := range q {
+			q[i] = x % char
+		}
 	}
 
 	return q
@@ -207,7 +243,12 @@ func PolynomialDerivative(f []int64, char int64) []int64 {
 	out := make([]int64, len(f)-1)
 
 	for i := int64(len(f) - 1); i >= 1; i-- {
-		out[i-1] = (f[i] * i) % char
+		out[i-1] = (f[i] * i)
+	}
+	if char != 0 {
+		for i := range out {
+			out[i] = out[i] % char
+		}
 	}
 
 	return out
