@@ -123,3 +123,9 @@ func TestPolynomialModExp(t *testing.T) {
 	assert.Equal(t, []int64{5, 11, 7, 10, 0, 11, 7, 12}, PolynomialModExp(x, 13*6, mod, 13))
 	assert.Equal(t, []int64{3, 3, 12, 5, 0, 11, 9, 12}, PolynomialModExp(x, 13*7, mod, 13))
 }
+
+func TestPrimitivePart(t *testing.T) {
+	assert.Equal(t, []int64{1, 1, 1, 2, 1}, PolynomialPrimitivePart([]int64{2, 2, 2, 4, 2}))
+	assert.Equal(t, []int64{6}, PolynomialPrimitivePart([]int64{6}))
+	assert.Equal(t, []int64{2, 5, 2, 4, 2}, PolynomialPrimitivePart([]int64{2, 5, 2, 4, 2}))
+}
