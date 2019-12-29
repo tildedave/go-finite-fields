@@ -13,3 +13,17 @@ func GCD(a, b int64) int64 {
 
 	return a
 }
+
+func IntExp(a int64, n int64) int64 {
+	pow := int64(1)
+
+	for n > 0 {
+		if n%2 == 1 {
+			pow = pow * a
+		}
+		a = a * a
+		n = n / 2
+	}
+
+	return pow
+}
