@@ -3,6 +3,12 @@ package main
 // From https://github.com/high-code-coverage/golang-example/blob/master/math/gcd.go#L3
 // (For now)
 func GCD(a, b int64) int64 {
+	if a < 0 {
+		return -GCD(-a, b)
+	}
+	if b < 0 {
+		return -GCD(a, -b)
+	}
 	for a != b {
 		if a > b {
 			a -= b
