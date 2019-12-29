@@ -29,6 +29,10 @@ func TestPolynomialMult(t *testing.T) {
 	assert.Equal(t, []int64{6, 3, 1, 3}, PolynomialMultiply(p1, p2, 7))
 }
 
+func TestPolynomialScalar(t *testing.T) {
+	assert.Equal(t, []int64{0}, PolynomialScalar([]int64{0}, 1, 0))
+}
+
 func TestPolynomialScalarMod(t *testing.T) {
 	assert.Equal(t, []int64{1, 2, 0}, PolynomialScalarMod([]int64{4, 14, 6}, 3))
 }
@@ -128,4 +132,14 @@ func TestPrimitivePart(t *testing.T) {
 	assert.Equal(t, []int64{1, 1, 1, 2, 1}, PolynomialPrimitivePart([]int64{2, 2, 2, 4, 2}))
 	assert.Equal(t, []int64{6}, PolynomialPrimitivePart([]int64{6}))
 	assert.Equal(t, []int64{2, 5, 2, 4, 2}, PolynomialPrimitivePart([]int64{2, 5, 2, 4, 2}))
+}
+
+func TestPolynomialPsuedoDivide(t *testing.T) {
+	a := []int64{3, 2, 1}
+	b := []int64{4, 5}
+	q, r := PolynomialPsuedoDivide(a, b)
+	d := PolynomialLeadingCoefficient(b)
+	e := PolynomialDegree(a) - PolynomialDegree(b) + 1
+
+	assert.Equal(t, PolynomialScalar(a, IntExp(d, int64(e)), 0), PolynomialAdd(PolynomialMultiply(b, q, 0), r, 0))
 }
