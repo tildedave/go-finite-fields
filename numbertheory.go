@@ -1,4 +1,4 @@
-package main
+package finitefields
 
 func Max(a int, b int) int {
 	if a > b {

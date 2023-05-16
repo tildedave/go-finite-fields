@@ -1,4 +1,4 @@
-package main
+package finitefields
 
 import (
 	"math/rand"
